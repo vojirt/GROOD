@@ -1,0 +1,37 @@
+SYSTEM:
+    RNG_SEED: 42
+
+MODEL:
+    FILENAME: resnet 
+    NET: ResNet34 
+    EMB_SIZE: 512                   # embeding size
+    NUM_CLASSES: 10                 # number of output classes
+
+LOSS: 
+    TYPE: [ARPL]
+    WEIGHTS: [1.0]
+  
+DATASET:
+    TRAIN: cifar10
+    VAL: cifar10
+    TEST: svhn
+    SELECTED_LABELS: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]    # which labels from mnist are known classes
+    TRAIN_LABEL_NAMES: [plane, car, bird, cat, deer, dog, frog, horse, ship, truck]   # class names
+    AUGMENT: BasicAugmentation
+    VAL_FRACTION: 0.0
+
+INPUT:
+    BATCH_SIZE: 128 
+    NUM_CHANNELS: 3
+    IMG_SZ: 32 
+    RGB: true
+
+EXPERIMENT:
+    EPOCHS: 100 
+
+OPTIMIZER:
+    METHOD: "adam"
+    LR: 0.1
+    WEIGHT_DECAY: 0.0 
+    SCHEDULER: "multistep"
+

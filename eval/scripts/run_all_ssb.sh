@@ -1,0 +1,93 @@
+#!/bin/bash
+
+if [ $# -ne 5 ]; then 
+    echo "Illegal number of parameters!"
+    echo "Usage:"
+    echo "  ./run_all_ssb.sh <EXP_OUT_DIR suffix> <config name> <gpu_id> <eval_type> <skip_trainig>"
+    exit 0
+fi
+
+EXP_OUT_DIR="./_out/experiments/ssb/$1/"
+CONFIG="./config/$2"
+GPU=$3 
+EVAL_TYPE=$4
+SKIP_TRAINING=$5
+echo "EXP_DIR: $EXP_OUT_DIR, CONFIG: $CONFIG, GPU: $GPU, EVAL_TYPE: $EVAL_TYPE"
+
+################ CUB ###################
+SELECTED_LABELS="0,5,7,9,11,12,15,17,18,19,23,26,27,28,30,31,34,38,39,40,42,43,44,48,50,51,53,55,56,61,64,67,69,70,72,74,76,77,79,80,81,82,84,87,88,89,91,93,94,95,97,98,99,106,111,116,119,121,123,124,126,129,131,133,134,135,136,137,141,143,144,146,147,149,150,154,157,158,161,162,163,166,167,168,171,172,174,176,177,178,179,184,186,189,190,193,196,197,198,199"
+
+OOD_SELECTED_LABELS_EASY="1,4,6,14,16,20,33,35,41,46,47,52,54,57,68,75,86,100,105,108,109,113,138,139,148,159,165,173,180,182,187,188"
+OOD_SELECTED_LABELS_MEDIUM="2,10,21,22,37,45,49,60,62,66,73,78,83,85,92,96,103,127,132,151,152,153,155,164,169,170,175,181,183,185,191,192,194,195"
+OOD_SELECTED_LABELS_HARD="3,8,13,24,25,29,32,36,58,59,63,65,71,90,101,102,104,107,110,112,114,115,117,118,120,122,125,128,130,140,142,145,156,160"
+
+# train on CUB dataset
+DATASET="ssb_cub"
+if [[ "$SKIP_TRAINING" == "no" ]]; then 
+    echo CUDA_VISIBLE_DEVICES=$GPU python3 train.py --config $CONFIG EXPERIMENT.OUT_DIR $EXP_OUT_DIR EXPERIMENT.NAME $DATASET DATASET.TRAIN ssb_cub DATASET.VAL ssb_cub DATASET.TEST ssb_cub DATASET.SELECTED_LABELS $SELECTED_LABELS MODEL.NUM_CLASSES 100
+    CUDA_VISIBLE_DEVICES=$GPU python3 train.py --config $CONFIG EXPERIMENT.OUT_DIR $EXP_OUT_DIR EXPERIMENT.NAME $DATASET DATASET.TRAIN ssb_cub DATASET.VAL ssb_cub DATASET.TEST ssb_cub DATASET.SELECTED_LABELS $SELECTED_LABELS MODEL.NUM_CLASSES 100
+else
+    echo "Skipping the training..."
+fi
+
+# evaluate on Easy OOD classes
+CUDA_VISIBLE_DEVICES=$GPU python3 eval/eval_ssb.py --exp_dir $EXP_OUT_DIR$DATASET --eval_variant "Easy" --dontknow_prior 0.05 --evaluation_type $EVAL_TYPE --latest_checkpoint DATASET.OOD_SELECTED_LABELS $OOD_SELECTED_LABELS_EASY
+
+# evaluate on Medium OOD classes
+# CUDA_VISIBLE_DEVICES=$GPU python3 eval/eval_ssb.py --exp_dir $EXP_OUT_DIR$DATASET --eval_variant "Medium" --dontknow_prior 0.05 --evaluation_type $EVAL_TYPE --latest_checkpoint DATASET.OOD_SELECTED_LABELS $OOD_SELECTED_LABELS_MEDIUM
+
+# evaluate on Hard OOD classes
+CUDA_VISIBLE_DEVICES=$GPU python3 eval/eval_ssb.py --exp_dir $EXP_OUT_DIR$DATASET --eval_variant "Hard" --dontknow_prior 0.05 --evaluation_type $EVAL_TYPE --latest_checkpoint DATASET.OOD_SELECTED_LABELS $OOD_SELECTED_LABELS_HARD
+
+
+################ StanfordCars ###################
+SELECTED_LABELS="0,1,2,7,9,11,16,20,22,25,26,28,38,41,44,46,50,53,54,75,81,82,84,93,95,97,98,100,102,104,105,112,117,122,123,125,127,129,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,180,181,182,184,185,186,187,188,189,191,192,193,194,195"
+
+OOD_SELECTED_LABELS_EASY="4,5,6,12,13,14,15,18,19,24,30,31,32,33,34,35,36,37,39,40,43,47,48,49,51,52,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,76,77,78,79,80,85,86,87,88,89,90,91,92,101,106,107,108,109,110,111,114,115,116,118,119,120,121,124,130,131,132"
+OOD_SELECTED_LABELS_MEDIUM="3,8,10,17,21,27,29,45,55,96,99,103,128,179,183"
+OOD_SELECTED_LABELS_HARD="23,42,83,94,113,126,190"
+
+# train on StanfordCars dataset
+DATASET="ssb_scars"
+if [[ "$SKIP_TRAINING" == "no" ]]; then 
+    echo CUDA_VISIBLE_DEVICES=$GPU python3 train.py --config $CONFIG EXPERIMENT.OUT_DIR $EXP_OUT_DIR EXPERIMENT.NAME $DATASET DATASET.TRAIN ssb_scars DATASET.VAL ssb_scars DATASET.TEST ssb_scars DATASET.SELECTED_LABELS $SELECTED_LABELS MODEL.NUM_CLASSES 98
+    CUDA_VISIBLE_DEVICES=$GPU python3 train.py --config $CONFIG EXPERIMENT.OUT_DIR $EXP_OUT_DIR EXPERIMENT.NAME $DATASET DATASET.TRAIN ssb_scars DATASET.VAL ssb_scars DATASET.TEST ssb_scars DATASET.SELECTED_LABELS $SELECTED_LABELS MODEL.NUM_CLASSES 98
+else
+    echo "Skipping the training..."
+fi
+
+# evaluate on Easy OOD classes
+CUDA_VISIBLE_DEVICES=$GPU python3 eval/eval_ssb.py --exp_dir $EXP_OUT_DIR$DATASET --eval_variant "Easy" --dontknow_prior 0.05 --evaluation_type $EVAL_TYPE --latest_checkpoint DATASET.OOD_SELECTED_LABELS $OOD_SELECTED_LABELS_EASY
+
+# evaluate on Medium OOD classes
+# CUDA_VISIBLE_DEVICES=$GPU python3 eval/eval_ssb.py --exp_dir $EXP_OUT_DIR$DATASET --eval_variant "Medium" --dontknow_prior 0.05 --evaluation_type $EVAL_TYPE --latest_checkpoint DATASET.OOD_SELECTED_LABELS $OOD_SELECTED_LABELS_MEDIUM
+
+# evaluate on Hard OOD classes
+CUDA_VISIBLE_DEVICES=$GPU python3 eval/eval_ssb.py --exp_dir $EXP_OUT_DIR$DATASET --eval_variant "Hard" --dontknow_prior 0.05 --evaluation_type $EVAL_TYPE --latest_checkpoint DATASET.OOD_SELECTED_LABELS $OOD_SELECTED_LABELS_HARD
+
+
+################ FGVC-Aircraft ###################
+SELECTED_LABELS="0,1,2,3,4,5,10,11,14,16,17,19,21,22,23,24,27,28,29,30,33,36,37,38,39,41,43,44,45,46,47,48,52,53,56,57,58,63,64,65,66,67,71,73,76,77,79,92,95,99"
+
+OOD_SELECTED_LABELS_EASY="34,35,40,42,62,72,74,75,80,81,83,84,89,90,91,93,94,96,97,98"
+OOD_SELECTED_LABELS_MEDIUM="49,50,51,54,55,59,60,61,68,69,70,78,82,85,86,87,88"
+OOD_SELECTED_LABELS_HARD="6,7,8,9,12,13,15,18,20,25,26,31,32"
+
+# train on FGVC-Aircraft dataset
+DATASET="ssb_aircraft"
+if [[ "$SKIP_TRAINING" == "no" ]]; then 
+    echo CUDA_VISIBLE_DEVICES=$GPU python3 train.py --config $CONFIG EXPERIMENT.OUT_DIR $EXP_OUT_DIR EXPERIMENT.NAME $DATASET DATASET.TRAIN ssb_aircraft DATASET.VAL ssb_aircraft DATASET.TEST ssb_aircraft DATASET.SELECTED_LABELS $SELECTED_LABELS MODEL.NUM_CLASSES 50
+    CUDA_VISIBLE_DEVICES=$GPU python3 train.py --config $CONFIG EXPERIMENT.OUT_DIR $EXP_OUT_DIR EXPERIMENT.NAME $DATASET DATASET.TRAIN ssb_aircraft DATASET.VAL ssb_aircraft DATASET.TEST ssb_aircraft DATASET.SELECTED_LABELS $SELECTED_LABELS MODEL.NUM_CLASSES 50
+else
+    echo "Skipping the training..."
+fi
+
+# evaluate on Easy OOD classes
+CUDA_VISIBLE_DEVICES=$GPU python3 eval/eval_ssb.py --exp_dir $EXP_OUT_DIR$DATASET --eval_variant "Easy" --dontknow_prior 0.05 --evaluation_type $EVAL_TYPE --latest_checkpoint DATASET.OOD_SELECTED_LABELS $OOD_SELECTED_LABELS_EASY
+
+# evaluate on Medium OOD classes
+# CUDA_VISIBLE_DEVICES=$GPU python3 eval/eval_ssb.py --exp_dir $EXP_OUT_DIR$DATASET --eval_variant "Medium" --dontknow_prior 0.05 --evaluation_type $EVAL_TYPE --latest_checkpoint DATASET.OOD_SELECTED_LABELS $OOD_SELECTED_LABELS_MEDIUM
+
+# evaluate on Hard OOD classes
+CUDA_VISIBLE_DEVICES=$GPU python3 eval/eval_ssb.py --exp_dir $EXP_OUT_DIR$DATASET --eval_variant "Hard" --dontknow_prior 0.05 --evaluation_type $EVAL_TYPE --latest_checkpoint DATASET.OOD_SELECTED_LABELS $OOD_SELECTED_LABELS_HARD
+
