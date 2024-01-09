@@ -92,13 +92,13 @@ See the notebooks in `./jupyter/` folder for the following visualizations:
 If you use this work please cite:
 
 ```latex
-@misc{Vojir_2023_arXiv,
-      title={{Calibrated Out-of-Distribution Detection with a Generic Representation}}, 
-      author={Tomas Vojir and Jan Sochman and Rahaf Aljundi and Jiri Matas},
-      year={2023},
-      eprint={2303.13148},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+@InProceedings{Vojir_2023_ICCV,
+    author    = {Voj{\'\i}\v{r}, Tom\'a\v{s} and \v{S}ochman, Jan and Aljundi, Rahaf and Matas, Ji\v{r}{\'\i}},
+    title     = {Calibrated Out-of-Distribution Detection with a Generic Representation},
+    booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) Workshops},
+    month     = {October},
+    year      = {2023},
+    pages     = {4507-4516}
 }
 ```
 
